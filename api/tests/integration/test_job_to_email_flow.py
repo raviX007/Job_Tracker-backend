@@ -4,10 +4,10 @@ Tests multi-endpoint flows that the pipeline executes sequentially.
 Uses mock DB (no real PostgreSQL), but exercises the real HTTP layer.
 """
 
-
 from unittest.mock import AsyncMock
-from conftest import _mock_row
+
 import pytest
+from conftest import _mock_row
 
 
 @pytest.mark.integration

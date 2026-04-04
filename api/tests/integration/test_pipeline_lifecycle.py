@@ -4,10 +4,11 @@ Tests the full flow: trigger run → callback updates → poll status.
 Uses mock DB (no real PostgreSQL), but exercises the real HTTP layer.
 """
 
-
 from unittest.mock import AsyncMock, patch
-from conftest import _mock_row
+
 import pytest
+from conftest import _mock_row
+
 
 @pytest.mark.integration
 def test_pipeline_run_then_callback_then_poll(authed_client):
