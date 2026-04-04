@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from api.deps import verify_auth
-from core.auth import hash_password, verify_password, create_token
+from core.auth import create_token, hash_password, verify_password
 
 logger = logging.getLogger("jobbot.auth")
 

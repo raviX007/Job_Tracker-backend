@@ -166,7 +166,7 @@ async def upload_resume(request: Request, file: UploadFile = File(...)):
         try:
             extracted = await extract_profile_from_pdf(content)
         except ValueError as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=str(e)) from e
     else:
         # LaTeX: read as text
         resume_text = await extract_text_from_tex(content)
@@ -179,7 +179,7 @@ async def upload_resume(request: Request, file: UploadFile = File(...)):
         try:
             extracted = await extract_profile_from_tex(resume_text)
         except ValueError as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
     # ─── Auto-save: merge extracted data into existing config ─────
     auto_saved = False

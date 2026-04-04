@@ -112,8 +112,6 @@ def _get_extraction_prompt() -> str:
 
 async def extract_text_from_pdf(file_content: bytes) -> str:
     """Extract text from a PDF file using PyPDF2 (for DB storage)."""
-    
-
     reader = PdfReader(io.BytesIO(file_content))
     text_parts = []
     for page in reader.pages:

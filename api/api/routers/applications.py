@@ -1,19 +1,17 @@
 """Application tracking endpoints."""
 
+from typing import Literal
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import JSONResponse
+
+from api.deps import require_editor
+from api.helpers import _ParamBuilder, _rows
 from api.models import (
     CreateApplicationRequest,
     UpdateOutcomeRequest,
     UpsertApplicationRequest,
 )
-
-from typing import Literal
-
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
-
-from api.deps import require_editor
-from fastapi.responses import JSONResponse
-
-from api.helpers import _ParamBuilder, _rows
 
 router = APIRouter(tags=["Applications"])
 
