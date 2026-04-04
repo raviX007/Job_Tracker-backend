@@ -6,7 +6,6 @@ Uses mock DB (no real PostgreSQL), but exercises the real HTTP layer.
 
 import pytest
 from unittest.mock import AsyncMock, patch
-
 from conftest import _mock_row
 
 
