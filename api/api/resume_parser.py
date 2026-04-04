@@ -13,8 +13,9 @@ import io
 import logging
 import os
 
-from PyPDF2 import PdfReader
 from pydantic import BaseModel
+from PyPDF2 import PdfReader
+
 # Use Langfuse-wrapped OpenAI for automatic tracing (falls back to regular if not installed)
 try:
     from langfuse.openai import AsyncOpenAI
