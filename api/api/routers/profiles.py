@@ -4,7 +4,7 @@ import json
 import logging
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from api.deps import ADMIN_USERNAME, require_editor
 from api.profile_schema import ProfileConfig
@@ -99,7 +99,7 @@ async def save_my_profile(request: Request, body: SaveProfileRequest):
     try:
         validated = ProfileConfig(**body.config)
     except Exception as e:
-        raise HTTPException(status_code=422, detail=f"Invalid profile config: {e}")
+        raise HTTPException(status_code=422, detail=f"Invalid profile config: {e}") from e
 
     config_json = json.dumps(validated.model_dump(mode="json"))
     name = validated.candidate.name

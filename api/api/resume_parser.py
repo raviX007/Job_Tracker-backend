@@ -9,11 +9,12 @@ wrapper. The extraction prompt can be managed in Langfuse (name: "resume-extract
 """
 
 import base64
+import io
 import logging
 import os
 
+from PyPDF2 import PdfReader
 from pydantic import BaseModel
-
 # Use Langfuse-wrapped OpenAI for automatic tracing (falls back to regular if not installed)
 try:
     from langfuse.openai import AsyncOpenAI
@@ -111,8 +112,7 @@ def _get_extraction_prompt() -> str:
 
 async def extract_text_from_pdf(file_content: bytes) -> str:
     """Extract text from a PDF file using PyPDF2 (for DB storage)."""
-    from PyPDF2 import PdfReader
-    import io
+    
 
     reader = PdfReader(io.BytesIO(file_content))
     text_parts = []

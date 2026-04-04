@@ -55,8 +55,8 @@ async def verify_auth(
             request.state.user_id = payload["sub"]
             request.state.username = payload["username"]
             return
-        except Exception:
-            raise HTTPException(status_code=401, detail="Invalid or expired token")
+        except Exception as err:
+            raise HTTPException(status_code=401, detail="Invalid or expired token") from err
 
     # 3. No key configured — local dev bypass
     if not API_SECRET_KEY:
