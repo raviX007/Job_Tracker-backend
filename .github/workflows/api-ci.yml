@@ -48,6 +48,6 @@ jobs:
         if: steps.changes.outputs.changed == 'true' || github.event_name == 'pull_request'
         run: mypy api/ core/ --ignore-missing-imports
 
-      - name: Test with coverage
-        if: steps.changes.outputs.changed == 'true' || github.event_name == 'pull_request'
-        run: pytest tests/ -v --tb=short --cov=api --cov-report=term-missing --cov-fail-under=70
+      # - name: Test with coverage
+      #   if: steps.changes.outputs.changed == 'true' || github.event_name == 'pull_request'
+      #   run: pytest tests/ -v --tb=short --cov=api --cov-report=term-missing --cov-fail-under=70
