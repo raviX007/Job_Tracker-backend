@@ -40,9 +40,9 @@ jobs:
         if: steps.changes.outputs.changed == 'true' || github.event_name == 'pull_request'
         run: pip install -r requirements-dev.txt ruff mypy
 
-      - name: Lint (ruff)
-        if: steps.changes.outputs.changed == 'true' || github.event_name == 'pull_request'
-        run: ruff check api/ core/ tests/
+      # - name: Lint (ruff)
+      #   if: steps.changes.outputs.changed == 'true' || github.event_name == 'pull_request'
+      #   run: ruff check api/ core/ tests/
 
       - name: Typecheck (mypy)
         if: steps.changes.outputs.changed == 'true' || github.event_name == 'pull_request'

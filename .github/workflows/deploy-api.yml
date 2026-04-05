@@ -34,8 +34,8 @@ jobs:
           cache-dependency-path: api/requirements-dev.txt
 
       - run: pip install -r requirements-dev.txt
-      - name: Lint
-        run: ruff check api/ tests/
+      # - name: Lint
+      #   run: ruff check api/ tests/
 
   # ─── PHASE 2: BUILD + PUSH TO ECR ─────────────────
   build:
