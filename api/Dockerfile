@@ -10,6 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY --chown=appuser:appuser . .
 
+# Create logs directory with correct permissions
+RUN mkdir -p /app/logs && chown -R appuser:appuser /app/logs
+
 USER appuser
 
 EXPOSE 8008
