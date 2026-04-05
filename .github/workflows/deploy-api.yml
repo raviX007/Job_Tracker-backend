@@ -1,11 +1,11 @@
-name: Deploy Backend
+name: Deploy Job Tracker API
 
 on:
   push:
     branches: [main]
     paths:
       - 'api/**'
-      - '.github/workflows/deploy-backend.yml'
+      - '.github/workflows/deploy-api.yml'
   workflow_dispatch:
 
 permissions:
@@ -14,7 +14,7 @@ permissions:
 
 env:
   AWS_REGION: ap-south-1
-  ECR_REPOSITORY: resume-tailor-backend
+  ECR_REPOSITORY: job-tracker-api
 
 jobs:
   # ─── PHASE 1: TEST ────────────────────────────────
@@ -36,19 +36,17 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - name: Lint
         run: ruff check api/ tests/
-      # - name: Test
-      #   run: pytest --cov=api --cov-report=term-missing --cov-fail-under=70
 
   # ─── PHASE 2: BUILD + PUSH TO ECR ─────────────────
-  # ─── PHASE 3: SSH INTO EC2 + DEPLOY ────────────────
-  deploy:
-    name: Build → ECR → EC2
+  build:
+    name: Build → ECR
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.build.outputs.image }}
     steps:
       - uses: actions/checkout@v4
 
-      # Auth with AWS (OIDC — no stored keys)
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-deploy
@@ -58,12 +56,11 @@ jobs:
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Build Docker image (includes texlive/pdflatex inside the image)
       - name: Build Docker image
         id: build
         run: |
           IMAGE="${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
-          docker build -t $IMAGE backend/
+          docker build -t $IMAGE api/
           docker tag $IMAGE ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
           echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
 
@@ -72,7 +69,17 @@ jobs:
           docker push ${{ steps.build.outputs.image }}
           docker push ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
 
-      # SSH into EC2, pull new image, restart container
+  # ─── PHASE 3: DEPLOY TO EC2 ───────────────────────
+  deploy:
+    name: Deploy → EC2
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions-deploy
+          aws-region: ${{ env.AWS_REGION }}
+
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1
         with:
@@ -80,22 +87,35 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            # Login to ECR
             aws ecr get-login-password --region ap-south-1 | \
               docker login --username AWS --password-stdin \
               ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com
 
+            # Pull latest secrets
             aws secretsmanager get-secret-value \
-                    --secret-id job-tracker/api \
-                    --region ap-south-1 \
-                    --query SecretString \
-                    --output text | python3 -c "
-                  import json, sys
-                  for k, v in json.load(sys.stdin).items():
-                      print(f'{k}={v}')
-                  " > /home/ec2-user/apps/job-tracker-api.env
+              --secret-id job-tracker/api \
+              --region ap-south-1 \
+              --query SecretString \
+              --output text | python3 -c "
+            import json, sys
+            for k, v in json.load(sys.stdin).items():
+                print(f'{k}={v}')
+            " > /home/ec2-user/apps/job-tracker-api.env
 
-            cd /home/ec2-user/apps
-            docker compose pull resume-tailor-backend
-            docker compose up -d resume-tailor-backend
+            # Stop and remove old container
+            docker stop job-tracker-api || true
+            docker rm job-tracker-api || true
+
+            # Pull and run new container
+            docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com/job-tracker-api:latest
+
+            docker run -d \
+              --name job-tracker-api \
+              --restart unless-stopped \
+              -p 8008:8008 \
+              --env-file /home/ec2-user/apps/job-tracker-api.env \
+              ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com/job-tracker-api:latest
+
             docker image prune -f
-            echo "Backend deployed: ${{ github.sha }}"
+            echo "Job Tracker API deployed: ${{ github.sha }}"
