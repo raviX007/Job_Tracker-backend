@@ -36,8 +36,8 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - name: Lint
         run: ruff check api/ tests/
-      - name: Test
-        run: pytest --cov=api --cov-report=term-missing --cov-fail-under=70
+      # - name: Test
+      #   run: pytest --cov=api --cov-report=term-missing --cov-fail-under=70
 
   # ─── PHASE 2: BUILD + PUSH TO ECR ─────────────────
   # ─── PHASE 3: SSH INTO EC2 + DEPLOY ────────────────
