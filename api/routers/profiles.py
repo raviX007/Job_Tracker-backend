@@ -189,7 +189,7 @@ async def upload_resume(request: Request, file: UploadFile = File(...)):
         )
 
         # Build merged config: preserve existing sections, overlay extracted fields
-        existing_config = {}
+        existing_config: dict[str, object] = {}
         if existing and existing["config"]:
             cfg = existing["config"]
             existing_config = json.loads(cfg) if isinstance(cfg, str) else dict(cfg)
