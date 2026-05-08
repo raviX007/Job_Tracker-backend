@@ -2,6 +2,7 @@
 
 import json
 import logging
+from typing import Any
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from pydantic import BaseModel
@@ -189,7 +190,7 @@ async def upload_resume(request: Request, file: UploadFile = File(...)):
         )
 
         # Build merged config: preserve existing sections, overlay extracted fields
-        existing_config: dict[str, object] = {}
+        existing_config: dict[str, Any] = {}
         if existing and existing["config"]:
             cfg = existing["config"]
             existing_config = json.loads(cfg) if isinstance(cfg, str) else dict(cfg)
